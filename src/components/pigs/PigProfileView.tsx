@@ -213,7 +213,7 @@ function AssignedDevice({ pigId }: { pigId: string }) {
 
   return (
     <Card>
-      <div className="cardtitle mb-4">Assigned device</div>
+      <div className="cardtitle mb-4">Assigned collar</div>
       {body}
     </Card>
   );

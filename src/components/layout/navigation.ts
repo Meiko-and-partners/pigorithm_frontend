@@ -23,7 +23,7 @@ export const NAV_SECTIONS: NavSection[] = [
     title: "Livestock",
     items: [
       { key: "pigs", label: "Pigs", href: "/pigs", icon: "scan" },
-      { key: "devices", label: "Devices", href: "/devices", icon: "broadcast" },
+      { key: "devices", label: "Collars", href: "/devices", icon: "broadcast" },
       { key: "gateways", label: "Gateways", href: "/gateways", icon: "wifi-high" },
     ],
   },

@@ -72,7 +72,7 @@ export function Topbar({ navOpen, onOpenNav }: TopbarProps) {
         <Icon name="magnifying-glass" />
         <input
           className="searchinput"
-          placeholder="Search pigs, pens, devices, cases…"
+          placeholder="Search pigs, pens, collars, cases…"
           aria-label="Search (not available yet)"
           title="Search isn't available yet"
           disabled

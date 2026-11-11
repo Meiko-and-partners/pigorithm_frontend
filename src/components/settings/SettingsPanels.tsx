@@ -17,7 +17,7 @@ const ALERT_THRESHOLDS: SettingDef[] = [
 const NOTIFICATIONS: SettingDef[] = [
   { title: "Critical alerts", sub: "Push notifications for critical health events." },
   { title: "Daily herd summary", sub: "Email digest of farm health." },
-  { title: "Device & connectivity", sub: "Alerts when collars go offline or batteries run low." },
+  { title: "Collars & connectivity", sub: "Alerts when collars go offline or batteries run low." },
   { title: "Veterinary updates", sub: "Notify when a vet updates a medical case." },
 ];
 

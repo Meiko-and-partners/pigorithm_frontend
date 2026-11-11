@@ -26,7 +26,7 @@ export function DevicesView() {
   return (
     <>
       <PageHeader
-        title="Devices"
+        title="Collars"
         sub="Smart collars registered on this farm"
         actions={
           <Button icon="arrows-clockwise" onClick={() => { collars.reload(); gateways.reload(); }}>

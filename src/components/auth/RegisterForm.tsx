@@ -12,7 +12,7 @@ import {
   validateRegister,
   type FieldErrors,
 } from "@/lib/validation";
-import { AuthCard, Field, FormError, FormNote, SubmitButton } from "./FormParts";
+import { AuthCard, Field, FormError, FormNote, PasswordField, SubmitButton } from "./FormParts";
 import { loginErrorMessages } from "./LoginForm";
 
 const EMPTY: RegisterRequest = {
@@ -102,10 +102,9 @@ export function RegisterForm() {
         </div>
         <Field id="email" label="Email" type="email" autoComplete="email" value={values.email} error={fieldErrors.email} onChange={set("email")} />
         <Field id="phoneNumber" label="Phone number" type="tel" autoComplete="tel" optional placeholder="+2348012345678" value={values.phoneNumber} onChange={set("phoneNumber")} />
-        <Field
+        <PasswordField
           id="password"
           label="Password"
-          type="password"
           autoComplete="new-password"
           hint={`At least ${PASSWORD_MIN} characters.`}
           value={values.password}

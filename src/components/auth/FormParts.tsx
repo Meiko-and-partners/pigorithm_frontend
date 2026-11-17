@@ -1,4 +1,6 @@
-import type { InputHTMLAttributes, ReactNode } from "react";
+"use client";
+
+import { useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
 
 /** Brand header and card used by login, registration and onboarding. */
@@ -42,25 +44,37 @@ interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   hint?: string;
   optional?: boolean;
+  /** Control shown inside the right edge of the input, such as a show/hide button. */
+  trailing?: ReactNode;
 }
 
 /** Labelled input with inline validation message. */
-export function Field({ id, label, error, hint, optional, ...input }: FieldProps) {
+export function Field({ id, label, error, hint, optional, trailing, ...input }: FieldProps) {
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
+  const control = (
+    <input
+      id={id}
+      name={id}
+      className="input"
+      aria-invalid={error ? true : undefined}
+      aria-describedby={describedBy}
+      {...input}
+    />
+  );
   return (
     <div className="field">
       <label className="label" htmlFor={id}>
         {label}
         {optional && <span className="optional"> (optional)</span>}
       </label>
-      <input
-        id={id}
-        name={id}
-        className="input"
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy}
-        {...input}
-      />
+      {trailing ? (
+        <div className="inputwrap">
+          {control}
+          {trailing}
+        </div>
+      ) : (
+        control
+      )}
       {error ? (
         <div className="fielderror" id={`${id}-error`}>
           {error}
@@ -71,6 +85,31 @@ export function Field({ id, label, error, hint, optional, ...input }: FieldProps
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** Password input with a button that shows or hides the typed password. */
+export function PasswordField(props: Omit<FieldProps, "type" | "trailing">) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <Field
+      {...props}
+      type={visible ? "text" : "password"}
+      autoCapitalize="none"
+      autoCorrect="off"
+      spellCheck={false}
+      trailing={
+        <button
+          type="button"
+          className="inputaction"
+          aria-label={visible ? "Hide password" : "Show password"}
+          aria-controls={props.id}
+          onClick={() => setVisible((v) => !v)}
+        >
+          <Icon name={visible ? "eye-slash" : "eye"} />
+        </button>
+      }
+    />
   );
 }
 

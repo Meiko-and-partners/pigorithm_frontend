@@ -7,7 +7,7 @@ import { ApiError, errorMessage } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { hasErrors, validateLogin, type FieldErrors } from "@/lib/validation";
 import type { LoginRequest } from "@/lib/api/types";
-import { AuthCard, Field, FormError, FormNote, SubmitButton } from "./FormParts";
+import { AuthCard, Field, FormError, FormNote, PasswordField, SubmitButton } from "./FormParts";
 
 export function loginErrorMessages(error: unknown): string[] {
   if (error instanceof ApiError) {
@@ -72,10 +72,9 @@ export function LoginForm() {
           error={fieldErrors.email}
           onChange={(e) => setValues({ ...values, email: e.target.value })}
         />
-        <Field
+        <PasswordField
           id="password"
           label="Password"
-          type="password"
           autoComplete="current-password"
           value={values.password}
           error={fieldErrors.password}

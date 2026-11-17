@@ -73,6 +73,28 @@ describe("auth forms", () => {
       expect(auth.login).not.toHaveBeenCalled();
     });
 
+    it("shows and hides the password without changing what is submitted", async () => {
+      auth.login.mockResolvedValueOnce({});
+      render(<LoginForm />);
+      type(/^email/i, "owner@example.com");
+      type(/^password/i, "S3cret pw");
+      const input = screen.getByLabelText(/^password/i) as HTMLInputElement;
+      expect(input.type).toBe("password");
+
+      fireEvent.click(screen.getByRole("button", { name: "Show password" }));
+      expect(input.type).toBe("text");
+      expect(input.value).toBe("S3cret pw");
+
+      fireEvent.click(screen.getByRole("button", { name: "Hide password" }));
+      expect(input.type).toBe("password");
+      expect(auth.login).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+      await waitFor(() =>
+        expect(auth.login).toHaveBeenCalledWith({ email: "owner@example.com", password: "S3cret pw" }),
+      );
+    });
+
     it("explains an expired session", () => {
       params = new URLSearchParams("expired=1");
       render(<LoginForm />);
@@ -110,6 +132,14 @@ describe("auth forms", () => {
           password: "S3curePass!",
         }),
       );
+    });
+
+    it("has a show/hide toggle on the password field", () => {
+      render(<RegisterForm />);
+      const input = screen.getByLabelText(/^password/i) as HTMLInputElement;
+      fireEvent.click(screen.getByRole("button", { name: "Show password" }));
+      expect(input.type).toBe("text");
+      expect(input.getAttribute("autocomplete")).toBe("new-password");
     });
 
     it("explains a duplicate email", async () => {

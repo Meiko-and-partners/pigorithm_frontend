@@ -17,12 +17,33 @@ export function errorJson(statusCode: number, message: string | string[], path: 
 }
 
 /**
+ * The app's public origin. Behind a proxy (e.g. Railway), `request.nextUrl`
+ * holds the server's internal address such as `https://localhost:8080`, so the
+ * public origin comes from the server-only `FRONTEND_BASE_URL`, read per
+ * request. Without it (local development) the request's own origin is used.
+ * An invalid value falls back to that too, which fails closed behind a proxy.
+ */
+export function expectedOrigin(request: NextRequest): string {
+  const configured = process.env.FRONTEND_BASE_URL?.trim();
+  if (configured) {
+    try {
+      const url = new URL(configured);
+      if (url.protocol === "http:" || url.protocol === "https:") return url.origin;
+    } catch {
+      // Not a URL: fall through.
+    }
+    console.error("FRONTEND_BASE_URL is not a valid http(s) URL; using the request origin.");
+  }
+  return request.nextUrl.origin;
+}
+
+/**
  * Rejects cross-site POSTs. Browsers always send `Origin` on POST, so a
  * mismatch means another site is submitting to the auth routes.
  */
 export function assertSameOrigin(request: NextRequest): NextResponse | null {
   const origin = request.headers.get("origin");
-  if (origin && origin !== request.nextUrl.origin) {
+  if (origin && origin !== expectedOrigin(request)) {
     return errorJson(403, "Cross-origin request rejected", request.nextUrl.pathname);
   }
   return null;

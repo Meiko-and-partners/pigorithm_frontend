@@ -29,6 +29,7 @@ describe("auth route handlers", () => {
   beforeEach(() => {
     resetApiConfigForTests();
     vi.stubEnv("NEXT_PUBLIC_API_URL", BASE);
+    vi.stubEnv("FRONTEND_BASE_URL", "");
     fetchMock.mockReset();
     vi.stubGlobal("fetch", fetchMock);
   });
@@ -71,6 +72,59 @@ describe("auth route handlers", () => {
       fetchMock.mockRejectedValueOnce(new TypeError("fetch failed"));
       const res = await login(post("/api/auth/login", { email: "a@b.co", password: "pw" }));
       expect(res.status).toBe(502);
+    });
+  });
+
+  describe("origin check behind a proxy", () => {
+    // Behind Railway, Next.js sees its internal address, not the public domain.
+    const INTERNAL = "https://localhost:8080";
+    const PUBLIC = "https://pigorithm.example.test";
+
+    function proxied(origin: string) {
+      return new NextRequest(`${INTERNAL}/api/auth/login`, {
+        method: "POST",
+        headers: { origin, "content-type": "application/json" },
+        body: JSON.stringify({ email: "a@b.co", password: "pw" }),
+      });
+    }
+
+    it("rejects the public origin when FRONTEND_BASE_URL is not set", async () => {
+      const res = await login(proxied(PUBLIC));
+      expect(res.status).toBe(403);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("accepts the public origin from FRONTEND_BASE_URL, ignoring a trailing slash", async () => {
+      vi.stubEnv("FRONTEND_BASE_URL", `${PUBLIC}/`);
+      fetchMock.mockResolvedValueOnce(backendJson(200, tokens));
+      const res = await login(proxied(PUBLIC));
+      expect(res.status).toBe(200);
+    });
+
+    it("still rejects other origins, including the internal one, when FRONTEND_BASE_URL is set", async () => {
+      vi.stubEnv("FRONTEND_BASE_URL", PUBLIC);
+      for (const origin of ["https://evil.example", INTERNAL, PUBLIC.replace("https:", "http:")]) {
+        const res = await login(proxied(origin));
+        expect(res.status).toBe(403);
+      }
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("fails closed when FRONTEND_BASE_URL is not a valid URL", async () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.stubEnv("FRONTEND_BASE_URL", "not a url");
+      const res = await login(proxied(PUBLIC));
+      expect(res.status).toBe(403);
+      expect(error).toHaveBeenCalled();
+      error.mockRestore();
+    });
+
+    it("applies to refresh and logout too", async () => {
+      vi.stubEnv("FRONTEND_BASE_URL", PUBLIC);
+      for (const handler of [refresh, logout]) {
+        const res = await handler(proxied("https://evil.example"));
+        expect(res.status).toBe(403);
+      }
     });
   });
 
